@@ -7,15 +7,19 @@ var logger = require('morgan');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var catalogRouter = require('./routes/catalog'); //Import routes for "catalog" area of site
+var compression = require('compression');
+var helmet = require('helmet');
 
 var app = express();
 
+app.use(helmet());
+
 // Set up mongoose connection
 var mongoose = require('mongoose');
-var mongoDb = 'mongodb://localhost:27017/local_library';
-// var mongoDb =
-//   'mongodb+srv://admin:<password>@cluster0-xh9tr.azure.mongodb.net/local_library?retryWrites=true&w=majority';
-mongoose.connect(mongoDb, { useNewUrlParser: true });
+var dev_db_url =
+  'mongodb+srv://admin:admin1@cluster0-xh9tr.azure.mongodb.net/local_library?retryWrites=true&w=majority';
+var mongoDB = process.env.MONGODB_URI || dev_db_url;
+mongoose.connect(mongoDB, { useNewUrlParser: true });
 var db = mongoose.connection;
 db.on(
   'error',
@@ -30,6 +34,8 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.use(compression()); // compress all routes
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
